@@ -1,0 +1,292 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# This is a title
+
+## This is a subtitle
+
+These are my notes:
+
+- Note 1
+- Note 2
+
+```{r}
+
+print("hello world")
+
+```
+
+# IF, FOR and WHILE 
+
+```{r}
+# if statement
+
+age <- 25
+
+if (age<10){
+  print("Get off social media")
+} else if (age < 18){
+  print("Use with caution")
+} else{
+  print("Welcome!")
+}
+```
+
+```{r}
+#WHILE LOOP 
+
+x <- 1
+
+while (x<10){
+  print(x)
+  x <- x + 1
+}
+```
+
+```{r}
+#FOR loop
+names <- c("Alastair", "Martin", "Lewis")
+
+for (elephant in names){
+  print(elephant)
+}
+```
+
+# Working with CSVs
+
+```{r}
+data <- read.csv("../DATA/gapminder.csv")
+data
+```
+Turning categorical variables into factors...
+```{r}
+data$country <- as.factor(data$country)
+data$region <- as.factor(data$region)
+```
+
+```{r}
+max(data$year)
+min(data$life_expectancy)
+mean(data$population)
+unique(data$region)
+```
+
+```{r}
+# REMEMBER [ROWS,COLS]
+
+data[data$life_expectancy > 30,c("population", "life_expectancy")]
+```
+
+```{r}
+q1 <- data[data$population < 1000000,]
+q1
+```
+
+```{r}
+#List the countries for which gdp_per_capita in 2011 was over 60000, sorted by gdp_per_capita.
+
+q2 <- data[data$gdp_per_capita > 60000 & data$year == 2011,]
+q2 <- q2[order(q2$gdp_per_capita,decreasing=TRUE)]
+q2
+```
+
+
+```{r}
+#Q3 
+europe_82 <- data[data$region == "Europe" & data$life_expectancy > 82,]
+
+unique(europe_82$country)
+```
+
+1. Create a variable asia_82 that contains the following fields: year, country, gdp_per_capita, life_expectancy for all the countries in Asia region where life expectancy is over 82 that refer to years 2014 and later.
+2. List all the countries that can be found in this subset (there should be 3).
+
+```{r}
+asia_82 <- data[data$life_expectancy > 82 & data$year >= 2014 & data$region == "Asia", c("year", "country", "gdp_per_capita", "life_expectancy")]
+
+#unique(asia_82$country)
+```
+
+# Basic Visualisations
+
+```{r}
+# Histogram
+
+hist(data$life_expectancy)
+
+# Adding parameters
+
+hist(data$life_expectancy,
+     breaks = 35,
+     xlab="Life Exp",
+     ylab="Freq",
+     col="#CC55FF")
+
+```
+
+
+```{r}
+# Bar Chart
+
+## Aggregating the data
+country_regions <- unique(data[,c("region", "country")])
+country_regions
+
+counts <- table(country_regions$region)
+counts
+
+barplot(counts)
+```
+
+```{r}
+# Subplots
+
+d1850 <- data[data$year == 1850,]
+d1950 <- data[data$year == 1950,]
+d2015 <- data[data$year == 2015,]
+
+par(mfrow=c(1,3)) # Creates a 3 by 1 grid for the plot
+hist(d1850$life_expectancy)
+hist(d1950$life_expectancy)
+hist(d2015$life_expectancy)
+```
+
+
+# GGPLOT2
+
+```{r}
+# Importing a library
+library(ggplot2)
+```
+
+```{r}
+carData <- ggplot2::mpg
+carData
+
+#?mpg
+```
+
+
+```{r}
+# Scatter Plot 
+
+ggplot(data=carData) +
+  geom_point(mapping=aes(x=displ, y=hwy))
+
+# Adding colours
+
+ggplot(data=carData) +
+  geom_point(mapping=aes(x=displ, y=hwy), color="blue", shape=17)
+
+# # Adding colours
+
+ggplot(data=carData) +
+  geom_point(mapping=aes(x=displ, y=hwy, color=class), shape=17)
+
+# Changing the size of the point based on a col value
+
+ggplot(data=carData) +
+  geom_point(mapping=aes(x=displ, y=hwy, color=class, size=cyl), shape=17)
+```
+
+```{r}
+# Working with categorical variables
+
+ggplot(data=carData) +
+  geom_point(mapping=aes(x=displ, y=hwy)) +
+  facet_wrap(~class, nrow=2)
+
+```
+
+```{r}
+# Working with 2 categorical variables
+
+ggplot(data=carData)+
+  geom_point(mapping=aes(x=displ, y=hwy)) +
+  facet_grid(drv~cyl)
+```
+
+## Line Graphs
+
+```{r}
+# Basic Line Graph
+ggplot(data=carData) +
+  geom_smooth(mapping=aes(x=displ,y=hwy))
+
+# Splitting the lines
+ggplot(data=carData) +
+  geom_smooth(mapping=aes(x=displ,y=hwy, linetype=drv))
+```
+
+
+## Combining Graphs
+
+```{r}
+# Combining a scatter and a line graph
+
+ggplot(data=carData) +
+  geom_point(mapping=aes(x=displ,y=hwy)) +
+  geom_smooth(mapping=aes(x=displ,y=hwy))
+
+# Global Mappings
+ggplot(data=carData, mapping=aes(x=displ, y=hwy)) +
+  geom_point(mapping=aes(color=class))+
+  geom_smooth()
+```
+
+
+## Bar Graphs
+
+```{r}
+diamonds <- ggplot2::diamonds
+diamonds
+```
+
+
+```{r}
+# Bar chart 
+
+ggplot(data=diamonds) +
+  geom_bar(mapping=aes(x=cut))
+
+# Filling each bar 
+
+ggplot(data=diamonds) +
+  geom_bar(mapping=aes(x=cut, fill=clarity))
+
+# Splitting the above
+ggplot(data=diamonds) +
+  geom_bar(mapping=aes(x=cut, fill=clarity), position="dodge")
+
+# Another view...
+ggplot(data=diamonds) +
+  geom_bar(mapping=aes(x=cut, fill=clarity), position="fill")
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
